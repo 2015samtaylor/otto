@@ -95,9 +95,9 @@ df.to_csv('otto_inv.csv', index = False)
 
 # ----------------------------------------------- send otto inventory to remote server------
 
-Hostname = '165.22.33.209'
+Hostname = '165.227.217.76'
 Username = 'root'
-Password = ''
+SFTP_Password = config.SFTP_Password
 sftpPort = 22
 
 # ignore hosts check
@@ -105,9 +105,11 @@ cnopts = pysftp.CnOpts()
 cnopts.hostkeys = None
 
 
-with pysftp.Connection(host=Hostname, port=sftpPort, username=Username, password=Password, cnopts = cnopts) as sftp:
+with pysftp.Connection(host=Hostname, port=sftpPort, username=Username, password=SFTP_Password, cnopts = cnopts) as sftp:
     print('Connection established')
     
-    remotepath = '/var/www/html/admin/ottoexcelfile/otto_inv.csv'
+    remotepath = '/var/www/html/ottoinventorynew.py'
     localpath = 'otto_inv.csv'
     sftp.put(localpath, remotepath)
+
+  
