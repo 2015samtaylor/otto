@@ -108,7 +108,7 @@ cnopts.hostkeys = None
 with pysftp.Connection(host=Hostname, port=sftpPort, username=Username, password=SFTP_Password, cnopts = cnopts) as sftp:
     print('Connection established')
     
-    remotepath = '/var/www/html/ottoinventorynew.py'
+    remotepath = '/var/www/html/ottocap_inventory.csv'
     localpath = 'otto_inv.csv'
     sftp.put(localpath, remotepath)
 
