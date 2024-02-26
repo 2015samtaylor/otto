@@ -2,7 +2,9 @@
 # coding: utf-8
 
 # In[1]:
-
+import logging
+logging.basicConfig(filename='Otto_API.log', level=logging.INFO,
+                   format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 import json
 import requests
@@ -55,13 +57,20 @@ class API_creds:
         }
 
         r = s.post(url, headers = headers, data = payload)
-        tok = r.json()['access_token']
+        try:
+            tok = r.json()['access_token']
+            logging.info('\n\nObtained access_token')           
+        except:
+            logging.info('\n\nUnable to obtain access token')
+
         return(tok)
-        return(r)
+   
 
 #Instantiate API Creds class at otto variable 
 otto = API_creds(config.client_secret, config.client_ID)
 tok = otto.get_access_token()
+
+
 
 # --------------------------------------------------with token established, go & grab unique inventory string------------
 
@@ -73,7 +82,14 @@ def getInventory(tok):
     }
     
     response = requests.get('https://ottocap.com/api/s/download_inventory', headers= headers)
-    link = response.json()['file']        
+
+
+    try:
+        link = response.json()['file']      
+        logging.info('Got inventory link')
+    except:
+        logging.info('Unable to get inventory link')  
+
     return(link)
 
 
@@ -83,7 +99,12 @@ link = getInventory(tok)
 
 def retrieve_send():
     #takes hardcoded url, and saves as ottocap_inventory.csv in local dir
-    retrieve(link, 'ottocap_inventory.csv')
+    try:
+        retrieve(link, 'ottocap_inventory.csv')
+        logging.info('Requested inventory link succesfully')
+
+    except:
+        logging.info('Unable to request to inventory link')
     
     df = pd.read_csv('ottocap_inventory.csv')
     df2 = df[['sku_parent', 'sku_no', 'name', 'color', 'size','instock', 'CA', 'TX', 'GA']].copy()
@@ -93,7 +114,7 @@ def retrieve_send():
 df = retrieve_send()
 df.to_csv('otto_inv.csv', index = False)
 
-# ----------------------------------------------- send otto inventory to remote server------
+# # ----------------------------------------------- send otto inventory to remote server------
 
 Hostname = '165.227.217.76'
 Username = 'root'
@@ -110,6 +131,13 @@ with pysftp.Connection(host=Hostname, port=sftpPort, username=Username, password
     
     remotepath = '/var/www/html/ottocap_inventory.csv'
     localpath = 'otto_inv.csv'
-    sftp.put(localpath, remotepath)
+    try:
+        sftp.put(localpath, remotepath)
+        logging.info(f'Put ottocap inventory in {remotepath}')
+    except:
+        logging.info('Unable to put ottocap inventory in SFTP folder')
 
   
+#Insert file via pysftp to remote folder
+#Can confirm with putty
+#Utilizing pysftp
